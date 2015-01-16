@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.Iterator;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.ISODateTimeFormat;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -98,12 +99,11 @@ public class DatabaseQnADocumentSearchIT {
 	 */
 	public void defaultSearchOrdersByActivityDescending() {
 		ObjectNode query = mapper.createObjectNode();
-		@SuppressWarnings("unused")
 		ObjectNode queryNode = query.putObject("search");
 		ArrayNode qtext = queryNode.putArray("qtext");
 		qtext.add("tag:test-data-tag sort:active");  // the controller tier adds this if no query specified
 		ObjectNode results = qnaService.rawSearch(
-				ClientRole.SAMPLESTACK_CONTRIBUTOR, query, 1, false);
+				ClientRole.SAMPLESTACK_CONTRIBUTOR, query, 1, null);
 		assertTrue("Need data to test searches", results.size() > 0);
 
 		ArrayNode resultsArray = (ArrayNode) results.get("results");
@@ -126,7 +126,7 @@ public class DatabaseQnADocumentSearchIT {
 		ObjectNode queryNode = query.putObject("search");
 		queryNode.put("qtext", "tag:test-data-tag");
 		ObjectNode results = qnaService.rawSearch(ClientRole.SAMPLESTACK_GUEST,
-				query, 1, false);
+				query, 1, null);
 		assertEquals("Guest sees only approved docs", results.get("results")
 				.size(), 2);
 	}
@@ -137,7 +137,7 @@ public class DatabaseQnADocumentSearchIT {
 		ObjectNode searchNode = query.putObject("search");
 		searchNode.put("qtext", "tag:test-data-tag");
 		ObjectNode results = qnaService.rawSearch(
-				ClientRole.SAMPLESTACK_CONTRIBUTOR, searchNode, 1, false);
+				ClientRole.SAMPLESTACK_CONTRIBUTOR, searchNode, 1, null);
 		assertEquals("Logged-in user sees all docs in page", results.get("results")
 				.size(), 10);
 	}
@@ -158,7 +158,7 @@ public class DatabaseQnADocumentSearchIT {
 		qtexts.add("answeredBy:x");
 		qtexts.add("commentedBy:y");
 		qtexts.add("askedBy:z");
-		ObjectNode results = qnaService.rawSearch(ClientRole.SAMPLESTACK_CONTRIBUTOR, docNode, 1, false);
+		ObjectNode results = qnaService.rawSearch(ClientRole.SAMPLESTACK_CONTRIBUTOR, docNode, 1, null);
 		String resultsString =  mapper.writeValueAsString(results);
 		assertTrue(resultsString.contains("path-range-query"));  // if turn off search debug this will fail.
 	}
@@ -170,7 +170,7 @@ public class DatabaseQnADocumentSearchIT {
 		ObjectNode queryNode = query.putObject("search");
 		queryNode.put("qtext", "tag:test-data-tag");
 		ObjectNode results = qnaService.rawSearch(
-				ClientRole.SAMPLESTACK_CONTRIBUTOR, query, 1, false);
+				ClientRole.SAMPLESTACK_CONTRIBUTOR, query, 1, null);
 		ArrayNode qnaResults = (ArrayNode) results.get("results");
 		Iterator<JsonNode> i = qnaResults.iterator();
 		assertTrue("Need results to test results.", qnaResults.size() > 0);
@@ -251,7 +251,7 @@ public class DatabaseQnADocumentSearchIT {
 							+ " \"query\":{\"value-constraint-query\":{\"constraint-name\":\"resolved\",\"text\":true}}}}",
 							JsonNode.class);
 			results = qnaService.rawSearch(ClientRole.SAMPLESTACK_CONTRIBUTOR,
-					query, 1, false);
+					query, 1, null);
 
 			logger.debug("Query Results:" + mapper.writeValueAsString(results));
 
@@ -293,10 +293,10 @@ public class DatabaseQnADocumentSearchIT {
 					+ "{\"query\":"
 					+ "{\"range-constraint-query\":"
 					+ "{\"constraint-name\":\"lastActivity\", "
-					+ "\"value\":\"2015-08-09T18:16:56.809Z\", "
+					+ "\"value\":\"2014-08-09T18:16:56.809Z\", "
 					+ "\"range-operator\":\"LT\"}}}}", JsonNode.class);
 			results = qnaService.rawSearch(ClientRole.SAMPLESTACK_CONTRIBUTOR,
-					query, 1, true);
+					query, 1, DateTimeZone.forID("US/Pacific"));
 
 			logger.debug("Query Results:" + mapper.writeValueAsString(results));
 

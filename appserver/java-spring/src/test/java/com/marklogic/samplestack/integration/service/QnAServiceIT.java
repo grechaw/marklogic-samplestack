@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 
+import org.joda.time.DateTimeZone;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -396,7 +397,7 @@ public class QnAServiceIT extends MarkLogicIntegrationIT {
 		
 		ObjectNode structuredQuery = getTestJson("queries/blank.json");
 		// test view-all
-		ObjectNode jsonResults = service.rawSearch(ClientRole.SAMPLESTACK_CONTRIBUTOR, structuredQuery, 1, true);
+		ObjectNode jsonResults = service.rawSearch(ClientRole.SAMPLESTACK_CONTRIBUTOR, structuredQuery, 1, DateTimeZone.forID("US/Pacific"));
 		logger.info(mapper.writeValueAsString(jsonResults));
 		assertTrue("Blank query got back results", jsonResults.get("results")
 				.size() > 0);

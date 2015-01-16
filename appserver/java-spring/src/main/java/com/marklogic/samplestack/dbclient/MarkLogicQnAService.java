@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.UUID;
 
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -276,7 +277,7 @@ public class MarkLogicQnAService extends MarkLogicBaseService implements
 		return findOne(role, "id:" + postId, 1, loggedInId);
 	}
 
-	private DateTime[] getDateRanges(ClientRole role, ObjectNode structuredQuery) {
+	private DateTime[] getDateRanges(ClientRole role, ObjectNode structuredQuery, DateTimeZone userTimeZone) {
 		DateTime[] dates = new DateTime[2];
 		QueryManager queryManager = clients.get(role).newQueryManager();
 		ValuesDefinition valdef = queryManager
@@ -297,17 +298,17 @@ public class MarkLogicQnAService extends MarkLogicBaseService implements
 		String minDate = responseHandle.getAggregates()[0].getValue();
 		String maxDate = responseHandle.getAggregates()[1].getValue();
 		if (!minDate.equals("")) {
-			dates[0] = new DateTime(minDate);
+			dates[0] = new DateTime(minDate, userTimeZone);
 		}
 		if (!maxDate.equals("")) {
-			dates[1] = new DateTime(maxDate);
+			dates[1] = new DateTime(maxDate, userTimeZone);
 		}
 		return dates;
 	}
 
 	@Override
 	public ObjectNode rawSearch(ClientRole role, ObjectNode structuredQuery,
-			long start, boolean includeDateFacet) {
+			long start, DateTimeZone userTimeZone) {
 		ObjectNode docNode = mapper.createObjectNode();
 		ObjectNode searchNode = docNode.putObject("search");
 		if (structuredQuery != null) {
@@ -315,17 +316,12 @@ public class MarkLogicQnAService extends MarkLogicBaseService implements
 				searchNode.setAll((ObjectNode) structuredQuery.get("search"));
 			}
 		}
-//		if (qtext != null) {
-//			ArrayNode qtextNode = searchNode.putArray("qtext");
-//			qtextNode.addAll(qtext);
-//		}
 		String period = "";
-		if (includeDateFacet) {
+		if (userTimeZone != null) {
 			ObjectNode options = searchNode.putObject("options");
 			options.put("page-length", SamplestackConstants.RESULTS_PAGE_LENGTH);
 
-			DateTime[] dateRange = getDateRanges(role, structuredQuery);
-			logger.debug("Got ranges for buckets: " + dateRange.toString());
+			DateTime[] dateRange = getDateRanges(role, structuredQuery, userTimeZone);
 
 			if (dateRange[0] != null && dateRange[1] != null) {
 				ObjectNode facetDescriptor = DateFacetBuilder.dateFacet(
@@ -374,7 +370,7 @@ public class MarkLogicQnAService extends MarkLogicBaseService implements
 					.get(objectIndex);
 
 			// TODO this all should be extractable server-side, but
-			// I ran into issues with extract-document-data (10/15/2014)
+			// I ran into issues with extract-document-data (10/15/2015)
 			ObjectNode newContent = searchResponseResultNode
 					.putObject("content");
 			newContent.put("accepted", documentResultObject.get("accepted")
@@ -431,7 +427,7 @@ public class MarkLogicQnAService extends MarkLogicBaseService implements
 	// TODO date facet is default ON now. open issue is to control state from
 	// browser.
 	public ObjectNode rawSearch(ClientRole role, ObjectNode query, long start) {
-		return rawSearch(role, query, start, false);
+		return rawSearch(role, query, start, null);
 	}
 
 	@Override

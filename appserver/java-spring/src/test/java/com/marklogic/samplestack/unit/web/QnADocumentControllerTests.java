@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.samplestack.mock.MockApplication;
 import com.marklogic.samplestack.testing.IntegrationTests;
 import com.marklogic.samplestack.testing.QnADocumentControllerTestImpl;
@@ -120,10 +119,9 @@ public class QnADocumentControllerTests extends QnADocumentControllerTestImpl {
 		//not a mockable test
 	}
 	
-	@Override
 	@Test
-	public void testIncludeTimezone() throws JsonProcessingException, Exception {
-		super.testIncludeTimezone();
+	public void testIncludeTimezoneAdjustsDateFacet() throws JsonProcessingException, Exception {
+		super.testIncludeTimezone("queries/test-timezone-query.json");
 	}
 
 }

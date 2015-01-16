@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,8 +26,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.Locale;
 
 import org.skyscreamer.jsonassert.JSONAssert;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockHttpSession;
@@ -42,8 +40,6 @@ import com.marklogic.samplestack.domain.QnADocument;
  * Share implementation for QnADocumentController unit and integration tests.
  */
 public class QnADocumentControllerTestImpl extends ControllerTests {
-
-	Logger logger = LoggerFactory.getLogger(QnADocumentControllerTestImpl.class);
 
 	private QnADocument answeredQuestion;
 
@@ -468,12 +464,11 @@ public class QnADocumentControllerTestImpl extends ControllerTests {
 	/**
 	 * Support for timezone is an extra key from the browser layer.
 	 * @throws Exception 
-	 * @throws JsonProcessingException 
-	 * TODO actually implement
+	 * @throws JsonProcessingException
 	 */
-	public void testIncludeTimezone() throws JsonProcessingException, Exception {
+	public MockHttpServletResponse testIncludeTimezone(String queryResource) throws JsonProcessingException, Exception {
 
-		JsonNode testTimezoneQuery = getTestJson("queries/test-timezone-query.json");
+		JsonNode testTimezoneQuery = getTestJson(queryResource);
 
 		login("testC1@example.com", "c1");
 
@@ -484,6 +479,20 @@ public class QnADocumentControllerTestImpl extends ControllerTests {
 								.content(mapper.writeValueAsString(testTimezoneQuery)))
 				.andExpect(status().isOk()).andReturn().getResponse();
 
+		return result;
+	}
+
+
+	public void testBadTimezone() throws JsonProcessingException, Exception {
+		JsonNode testTimezoneQuery = getTestJson("queries/test-bad-timezone-query.json");
+		
+		this.mockMvc
+				.perform(
+						post("/v1/search").with(csrf()).session((MockHttpSession) session)
+								.contentType(MediaType.APPLICATION_JSON)
+								.content(mapper.writeValueAsString(testTimezoneQuery)))
+				.andExpect(status().isBadRequest());
+	
 	}
 
 }

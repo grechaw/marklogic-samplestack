@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
  */
 package com.marklogic.samplestack.service;
 
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import org.joda.time.DateTimeZone;
+
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.samplestack.domain.Contributor;
 import com.marklogic.samplestack.domain.InitialQuestion;
@@ -57,13 +58,13 @@ public interface QnAService {
 	 *            A JSON combined query payload, as a JSONNode.
 	 * @param start
 	 *            Index of the first result in the result set.
-	 * @param includeDates
-	 *            Include facet for date values
+	 * @param userTimeZone
+	 *            If not null, project the date time facets using the given timezone.
 	 * @return A QuestionResults object containing results/snippets for the
 	 *         search.
 	 */
 	public ObjectNode rawSearch(ClientRole role, ObjectNode combinedQuery,
-			long start, boolean includeDates);
+			long start, DateTimeZone userTimeZone);
 	
 	/**
 	 * Send a [JSON] raw structured query to the server, using the options

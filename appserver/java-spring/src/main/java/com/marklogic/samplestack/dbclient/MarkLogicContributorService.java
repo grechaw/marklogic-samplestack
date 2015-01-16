@@ -1,5 +1,5 @@
 /*
- * Copyright 2012-2014 MarkLogic Corporation
+ * Copyright 2012-2015 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,7 +175,6 @@ public class MarkLogicContributorService extends MarkLogicBaseService implements
 
 	@Override
 	public void store(Contributor contributor, Transaction transaction) {
-		logger.debug("Storing contributor id " + contributor.getId());
 		Contributor cachedContributor = getByUserName(contributor.getUserName(), transaction);
 		if (cachedContributor != null)
 			logger.debug("cached contributor " + cachedContributor.getId());
