@@ -92,7 +92,6 @@ public class SamplestackSecurityConfigurer {
 		   		.headers()
 		   			.xssProtection()
 		   			.cacheControl();
-		
 		http
 		   .authorizeRequests()
 			    .antMatchers(HttpMethod.GET, "/v1/session", "/v1/questions/**",

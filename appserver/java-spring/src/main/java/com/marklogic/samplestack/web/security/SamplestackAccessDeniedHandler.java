@@ -27,13 +27,14 @@ import org.apache.http.HttpStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
+import org.springframework.security.web.csrf.InvalidCsrfTokenException;
 import org.springframework.stereotype.Component;
 
 import com.marklogic.samplestack.web.JsonHttpResponse;
 
 /**
- * Custom handler to override default Spring Security login behavior.
- * This handler returns 403 for any resource not allowed by the security
+ * Custom handler to override default Spring Security login behavior. This
+ * handler returns 403 for any resource not allowed by the security
  * configuration.
  */
 @Component
@@ -41,10 +42,12 @@ public class SamplestackAccessDeniedHandler implements AccessDeniedHandler {
 
 	@Autowired
 	private JsonHttpResponse errors;
-	
+
 	@Override
 	/**
 	 * Handler override to return 403s on the HttpResponse.
+	 * If there's a X-CSRF-TOKEN header though, we'll be more
+	 * understanding and throw a 400 instead.
 	 */
 	public void handle(HttpServletRequest request,
 			HttpServletResponse response,
@@ -52,11 +55,22 @@ public class SamplestackAccessDeniedHandler implements AccessDeniedHandler {
 			ServletException {
 		HttpServletResponseWrapper responseWrapper = new HttpServletResponseWrapper(
 				response);
-		responseWrapper.setStatus(HttpStatus.SC_FORBIDDEN);
-		
-		Writer out = responseWrapper.getWriter();
-		errors.writeJsonResponse(out, HttpStatus.SC_FORBIDDEN, "Forbidden");
-		out.close();
+
+		Writer out = null;
+
+		if (accessDeniedException.getClass() == InvalidCsrfTokenException.class) {
+			responseWrapper.setStatus(HttpStatus.SC_BAD_REQUEST);
+			out = responseWrapper.getWriter();
+			errors.writeJsonResponse(out, HttpStatus.SC_BAD_REQUEST,
+					"Invalid Session or Token");
+
+		} else {
+			responseWrapper.setStatus(HttpStatus.SC_FORBIDDEN);
+			out = responseWrapper.getWriter();
+			errors.writeJsonResponse(out, HttpStatus.SC_FORBIDDEN, "Forbidden");
 		}
+
+		out.close();
+	}
 
 }
